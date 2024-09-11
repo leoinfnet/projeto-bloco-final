@@ -1,0 +1,83 @@
+services:
+#  rabbit:
+#    image: rabbitmq:3-management
+#    container_name: RABBIT-SERVER
+#    networks:
+#      - cervejaria_acme
+#  mysql-cerveja:
+#    environment:
+#      - MYSQL_ROOT_PASSWORD: 123456
+#    image: mysql:5
+#    networks:
+#      - cervejaria_acme
+  mongo:
+    container_name: MONGO-SERVER
+    image: mongo:7-jammy
+    volumes:
+      - ./mongodb-data:/data/db
+    ports:
+      - "27017:27017" #-p 27017:27017
+    networks:
+      - cervejaria_acme
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    links:
+      - mongo
+    ports:
+      - "8099:8081"
+    networks:
+      - cervejaria_acme
+    depends_on:
+      - mongo
+  eureka:
+    image: leogloriainfnet/eureka:latest
+    container_name: EUREKA-SERVER
+    ports:
+      - "8761:8761"
+    networks:
+      - cervejaria_acme
+  cerveja-service:
+    image: leogloriainfnet/cerveja:latest
+    networks:
+      - cervejaria_acme
+    depends_on:
+      - eureka
+  #    - mysql-cerveja
+  fabricante-service:
+    image: leogloriainfnet/fabricante:latest
+    networks:
+      -  cervejaria_acme
+    depends_on:
+      - eureka
+    deploy:
+      replicas: 3
+  imposto-service:
+    image: leogloriainfnet/imposto:latest
+    networks:
+      - cervejaria_acme
+    depends_on:
+      - eureka
+    deploy:
+      replicas: 10
+  pedido-service:
+    image: leogloriainfnet/pedido:latest
+    networks:
+      - cervejaria_acme
+    depends_on:
+      - eureka
+      - mongo
+    deploy:
+      replicas: 5
+  gateway:
+    image: leogloriainfnet/gateway:latest
+    networks:
+      - cervejaria_acme
+    depends_on:
+      - pedido-service
+      - eureka
+      - imposto-service
+      - cerveja-service
+      - fabricante-service
+networks:
+  cervejaria_acme:
+    driver: bridge

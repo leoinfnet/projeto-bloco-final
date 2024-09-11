@@ -1,0 +1,28 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: fabricante-service
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:h2:mem:fabricante
+    username: sa
+    #password: 123456
+    password: ${password}
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${random.value}
+  client:
+    service-url:
+      #defaultZone: http://localhost:8761/eureka
+      defaultZone: http://EUREKA-SERVER:8761/eureka
+      #defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
